@@ -41,13 +41,13 @@ def get_research_space(definitions):
 
 
 @timeit
-def compute_wmd_with_relevant_words(word, definitions):
+def compute_wmd_with_relevant_words(word, definitions, model):
     """
     Calculate distance between two sentences using WMD algorithm using relevant words
+    :param model: Word2Vec pre-trained model
     :param word: Word to find
     :param definitions: list of definitions from the dataset
     """
-    model = create_model()
     total_min_dist = 1000
     syns = []
     restricted_synsets = get_research_space(definitions)
@@ -62,13 +62,13 @@ def compute_wmd_with_relevant_words(word, definitions):
           .format(word, best_sense, find_relevant_word(unify_def, 1), word, best_sense[1].definition()))
 
 
-def compute_wmd(word, definitions):
+def compute_wmd(word, definitions, model):
     """
     Calculate distance between two sentences using WMD algorithm
+    :param model: Word2Vec pre-trained model
     :param word: Word to find
     :param definitions: list of definitions from the dataset
     """
-    model = create_model()
     min_dist = 1000
     total_min_dist = 1000
     syns = []
@@ -107,7 +107,7 @@ def create_model():
     """
     print('loading model...')
     start = time.perf_counter()
-    model = gensim.models.KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.bin', binary=True)
+    model = gensim.models.KeyedVectors.load_word2vec_format('./data/GoogleNews-vectors-negative300.bin', binary=True)
     end = time.perf_counter()
     print('model loaded in {} seconds'.format(round(end - start)))
     model.init_sims(replace=True)
@@ -122,7 +122,7 @@ def compute_lexical_overlap(word, definition):
     """
     max_overlap = 0
     best_synsets = []
-    stemmer = PorterStemmer()
+    # stemmer = PorterStemmer()
     # stemmed_def = [stemmer.stem(w) for w in definition]
     for ss in wn.all_synsets():
         lex_over = lexical_overlap(ss.definition().split(), definition)
@@ -146,14 +146,15 @@ def lexical_overlap(d1, d2):
 
 
 def run_word_movers_distance():
-    compute_wmd('Justice', justice_definitions)
-    compute_wmd('Politics', politics_definitions)
-    compute_wmd('Greed', greed_definitions)
-    compute_wmd('Radiator', radiator_definitions)
-    compute_wmd('Patience', patience_definitions)
-    compute_wmd('Food', food_definitions)
-    compute_wmd('Vehicle', vehicle_definitions)
-    compute_wmd('Screw', screw_definitions)
+    model = create_model()
+    compute_wmd('Justice', justice_definitions, model)
+    compute_wmd('Politics', politics_definitions, model)
+    compute_wmd('Greed', greed_definitions, model)
+    compute_wmd('Radiator', radiator_definitions, model)
+    compute_wmd('Patience', patience_definitions, model)
+    compute_wmd('Food', food_definitions, model)
+    compute_wmd('Vehicle', vehicle_definitions, model)
+    compute_wmd('Screw', screw_definitions, model)
 
 
 def run_lexical_overlap():
@@ -168,7 +169,7 @@ def run_lexical_overlap():
 
 
 if __name__ == '__main__':
-    df_definitions = pd.read_excel("Esperimento content-to-form.xlsx")
+    df_definitions = pd.read_excel("./data/Esperimento content-to-form.xlsx")
     justice_definitions = df_definitions['Justice'].tolist()
     politics_definitions = df_definitions['Politics'].tolist()
     greed_definitions = df_definitions['Greed'].tolist()
